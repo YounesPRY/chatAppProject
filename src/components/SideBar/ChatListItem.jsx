@@ -13,7 +13,7 @@ function ChatListItem({chat}) {
     <>
         <div className="chat_container">
             <div className="avatar">
-                {chat.avatarUrl === null || chat.avatarUrl == "" ? chat.name[0] : <img src={chat.avatarUrl} alt={chat.name[0]}></img>}
+                {chat.avatarUrl === null || chat.avatarUrl == "" ? chat.name[0] : <img src={chat.avatarUrl} alt={chat.name[0]} loading="lazy"></img>}
             </div>
             <div className="chat_infos">
                 <div className="name_lastmsg">
