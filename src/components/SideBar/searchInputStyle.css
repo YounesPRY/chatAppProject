@@ -50,7 +50,7 @@
 }
 
 .searchInput::placeholder {
-    color: #a0aec0;
+    color: #4d4d4d;
     font-weight: 400;
     transition: color 0.3s ease;
 }
@@ -65,7 +65,7 @@
 }
 
 .searchInput:hover::placeholder {
-    color: #718096;
+    color: #24282e;
 }
 
 .searchInput:focus {
@@ -82,7 +82,7 @@
 }
 
 .searchInput:focus::placeholder {
-    color: #cbd5e0;
+    color: #050505;
     transform: translateX(-5px);
     transition: all 0.3s ease;
 }
