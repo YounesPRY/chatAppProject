@@ -20,14 +20,18 @@ function ChatListItem({chat}) {
                     <div className="name">
                         {chat.name}
                     </div>
-                    <div className="lastMsg">
+                    {chat.lastMessage ? (
+                      <div className="lastMsg">
                         {chat.lastMessage.text}
-                    </div>
+                      </div>
+                    ) : null}
                 </div>
                 <div className="time_count">
-                    <div className="time">
-                        {chat.lastMessage.createdAt}
-                    </div>
+                    {chat.lastMessage ? (
+                      <div className="time">
+                        {chat.lastMessage.displayTime || chat.lastMessage.createdAt}
+                      </div>
+                    ) : null}
                     {chat.unreadCount === 0 ? "" :  <div className="count">{chat.unreadCount}</div>}
                 </div>
             </div>

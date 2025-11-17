@@ -1,8 +1,5 @@
 import { useState } from "react";
 
-
-
-
 function SearchChats({chats , onFilter}) {
    const [search , setSearch] = useState("");
    function handelSearch(event) {
