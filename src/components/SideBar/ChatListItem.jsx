@@ -13,12 +13,13 @@ function ChatListItem({chat}) {
     <>
         <div className="chat_container">
             <div className="avatar">
-                {chat.avatarUrl === null || chat.avatarUrl == "" ? chat.name[0] : <img src={chat.avatarUrl} alt={chat.name[0]} loading="lazy"></img>}
+                {chat.user.avatarUrl === null || chat.user.avatarUrl == "" ? chat.user.name[0] : <img src={chat.user.avatarUrl} alt={chat.user.name[0]} loading="lazy" className="avatarImg"></img>}
+                <span className={`status-dot ${chat.user.status === "online" ? "online" : "offline"}`}></span>
             </div>
             <div className="chat_infos">
                 <div className="name_lastmsg">
                     <div className="name">
-                        {chat.name}
+                        {chat.user.name}
                     </div>
                     {chat.lastMessage ? (
                       <div className="lastMsg">

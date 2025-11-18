@@ -83,7 +83,7 @@
 
 .searchInput:focus::placeholder {
     color: #050505;
-    transform: translateX(-5px);
+    transform: translateX(-1px);
     transition: all 0.3s ease;
 }
 

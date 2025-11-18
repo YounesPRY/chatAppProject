@@ -12,7 +12,7 @@ function SearchChats({chats , onFilter}) {
         return;
     }
     
-    const filtred = chats.filter(chat=>chat.name.toLowerCase().includes(value.toLowerCase()));
+    const filtred = chats.filter(chat=>chat.user.name.toLowerCase().includes(value.toLowerCase()));
     onFilter(filtred);
    }
 

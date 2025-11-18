@@ -1,6 +1,6 @@
 
 :root{
-  --bg: #0f1723;
+  --bg: #000000;
   --panel: rgba(255,255,255,0.04);
   --muted: #8b95a6;
   --accent: #6b7280;
@@ -31,6 +31,7 @@
   scrollbar-width: thin;
   scrollbar-color: rgba(148,163,184,0.2) transparent;
   max-height: 100vh;
+  margin: -8px;
 }
 
 .sidebar::-webkit-scrollbar {
@@ -57,7 +58,7 @@
   gap: var(--gap);
   padding: 16px 12px;
   border-radius: var(--radius);
-  background: var(--panel);
+  background: rgb(22, 21, 21);
   backdrop-filter: blur(8px);
   transition: background-color 0.2s ease, border-color 0.2s ease;
   cursor: pointer;
@@ -79,16 +80,21 @@
   box-shadow: 0 0 0 1px rgba(255,255,255,0.1), var(--shadow-hover);
 }
 
-/* avatar styling */
+
+.chat_container:hover .avatar {
+  box-shadow: 0 3px 8px rgba(0,0,0,0.25);
+}
+
+/* Avatar (single, authoritative definition) */
 .avatar {
-  width: var(--avatar-size);
+  position: relative;                 /* for the dot placement */
+  width: var(--avatar-size);          /* uses your root var */
   height: var(--avatar-size);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  overflow: hidden;
   background: linear-gradient(135deg, #475569 0%, #64748b 100%);
   color: white;
   font-weight: 600;
@@ -96,18 +102,55 @@
   box-shadow: 0 2px 6px rgba(0,0,0,0.2);
   transition: box-shadow 0.2s ease;
   border: 1px solid rgba(255,255,255,0.08);
+  /* allow the dot to sit outside without being clipped */
+  overflow: visible;
 }
 
-.chat_container:hover .avatar {
-  box-shadow: 0 3px 8px rgba(0,0,0,0.25);
-}
-
+/* avatar image should fill the circle */
 .avatar img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
+  border-radius: 50%;
 }
+
+/* tiny status circle that overlaps outside the avatar edge */
+.status-dot {
+  position: absolute;
+  /* position at the corner and nudge outward */
+  right: 0px;
+  bottom: -4px;
+  width: calc(var(--avatar-size) * 0.28);  /* proportional size */
+  height: calc(var(--avatar-size) * 0.28);
+  border-radius: 50%;
+  border: 2px solid var(--panel);   /* subtle white-ish border using your variable */
+  box-shadow: 0 1px 3px rgba(0,0,0,0.35);
+  background-color: var(--muted);
+  transition: background-color 0.15s ease, transform 0.12s ease;
+  transform: translateZ(0);
+}
+
+/* visuals for states */
+.status-dot.online {
+  background-color: #1152dd; /* WhatsApp style green, looks good on dark */
+}
+
+.status-dot.offline {
+  background-color: #9e9e9e;
+}
+
+/* slightly smaller dot on very small screens */
+@media (max-width: 420px) {
+  .status-dot {
+    right: -3px;
+    bottom: -3px;
+    width: calc(var(--avatar-size) * 0.22);
+    height: calc(var(--avatar-size) * 0.22);
+    border-width: 1.5px;
+  }
+}
+
 
 /* text area layout */
 .chat_infos {
@@ -185,7 +228,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: #64748b;
+  background: #1152dd;
   color: white;
   font-weight: 600;
   font-size: 11px;
@@ -219,4 +262,9 @@
 .chat_container:focus-visible {
   outline: 2px solid rgba(148,163,184,0.5);
   outline-offset: 2px;
+}
+
+.avatarImg {
+  width: 50px;
+  height: 500px;
 }
