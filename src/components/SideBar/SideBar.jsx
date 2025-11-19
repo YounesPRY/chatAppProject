@@ -1,9 +1,9 @@
 import ChatListItem from "./ChatListItem"; 
 import SearchChats from "./SearchChats";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import image from "../../assets/react.svg";
 import myImg from "../../assets/me.png";
 import vite from "../../assets/vite.svg";
-import { useState } from "react";
 
 const MESSAGE_SENDER = {
   CURRENT_USER: "current-user",
@@ -89,9 +89,9 @@ const getLastMessageFromArray = (messagesArray = []) => {
   return sorted[0];
 };
 
-/* ---------------------- Chats (messages as arrays) ---------------------- */
+/* ---------------------- Chats Data ---------------------- */
 
-const chats = [
+const initialChats = [
   {
     _id: 1,
     user: { id: "u1", name: "Younes", status: "online", avatarUrl: myImg },
@@ -184,38 +184,99 @@ const chats = [
   }
 ];
 
-
 /* ---------------------- Normalize and annotate ---------------------- */
 
-const normalizedChats = chats.map((chat) => {
-  // add displayTime to each message
-  const messages = chat.messages.map((m) => ({
-    ...m,
-    displayTime: formatMessageTimestamp(m.createdAt)
-  }));
+// Export normalization function
+export const normalizeChats = (chats) => {
+  return chats.map((chat) => {
+    // add displayTime to each message
+    const messages = chat.messages.map((m) => ({
+      ...m,
+      displayTime: formatMessageTimestamp(m.createdAt)
+    }));
 
-  const lastMessage = getLastMessageFromArray(messages) || null;
-  const unreadCount = messages.reduce((acc, m) => (isUnreadForMe(m) ? acc + 1 : acc), 0);
+    const lastMessage = getLastMessageFromArray(messages) || null;
+    const unreadCount = messages.reduce((acc, m) => (isUnreadForMe(m) ? acc + 1 : acc), 0);
 
-  return {
-    ...chat,
-    messages,
-    lastMessage: lastMessage ? { ...lastMessage } : null,
-    unreadCount
-  };
-});
+    return {
+      ...chat,
+      messages,
+      lastMessage: lastMessage ? { ...lastMessage } : null,
+      unreadCount
+    };
+  });
+};
 
 /* ---------------------- Component ---------------------- */
 
-export default function Sidebar() {
-  const [filteredChats, setFilteredChats] = useState(normalizedChats);
+export default function Sidebar({ onSelectedChatChange, onMessageSentHandler }) {
+  const [chats, setChats] = useState(initialChats);
+  const [selectedChatId, setSelectedChatId] = useState(null);
+  const [filteredChats, setFilteredChats] = useState([]);
+
+  // Normalize chats with displayTime, lastMessage, and unreadCount
+  const normalizedChats = useMemo(() => {
+    return normalizeChats(chats);
+  }, [chats]);
+
+  // Update filtered chats when normalized chats change
+  useEffect(() => {
+    setFilteredChats(normalizedChats);
+  }, [normalizedChats]);
+
+  // Get selected chat
+  const selectedChat = useMemo(() => {
+    return normalizedChats.find(chat => chat._id === selectedChatId) || null;
+  }, [normalizedChats, selectedChatId]);
+
+  // Notify parent when selected chat changes
+  useEffect(() => {
+    if (onSelectedChatChange) {
+      onSelectedChatChange(selectedChat);
+    }
+  }, [selectedChat, onSelectedChatChange]);
+
+  // Handle chat selection
+  const handleChatSelect = (chat) => {
+    setSelectedChatId(chat._id);
+  };
+
+  // Handle new message sent - update chats state
+  const handleMessageSent = useCallback((chatId, newMessage) => {
+    setChats(prevChats => {
+      return prevChats.map(chat => {
+        if (chat._id === chatId) {
+          return {
+            ...chat,
+            messages: [...chat.messages, newMessage]
+          };
+        }
+        return chat;
+      });
+    });
+  }, []);
+
+  // Expose handleMessageSent to parent
+  useEffect(() => {
+    if (onMessageSentHandler) {
+      onMessageSentHandler(handleMessageSent);
+    }
+  }, [onMessageSentHandler, handleMessageSent]);
 
   return (
     <div className="sidebar">
       <SearchChats chats={normalizedChats} onFilter={setFilteredChats} />
       {filteredChats.map(chat => (
-        <ChatListItem key={chat._id} chat={chat} />
+        <ChatListItem 
+          key={chat._id} 
+          chat={chat}
+          isSelected={selectedChatId === chat._id}
+          onSelect={() => handleChatSelect(chat)}
+        />
       ))}
     </div>
   );
 }
+
+// Export helpers and constants for use in other components
+export { MESSAGE_SENDER, formatMessageTimestamp, getLastMessageFromArray, isUnreadForMe, isMessageReceivedByMe };
