@@ -1,4 +1,6 @@
 
+import PropTypes from "prop-types";
+
 /**
  * ChatListItem
  * - chat: { _id, name, avatarUrl, lastMessage: { text, createdAt }, unreadCount }
@@ -6,7 +8,7 @@
  * - active boolean
  *
  * This component is intentionally small and pure. It does not fetch data.
-//  */
+ */
 
 function ChatListItem({ chat, isSelected = false, onSelect }) {
   const handleClick = () => {
@@ -48,5 +50,11 @@ function ChatListItem({ chat, isSelected = false, onSelect }) {
     </div>
   );
 }
+
+ChatListItem.propTypes = {
+  chat: PropTypes.object.isRequired,
+  isSelected: PropTypes.bool,
+  onSelect: PropTypes.func
+};
 
 export default ChatListItem;

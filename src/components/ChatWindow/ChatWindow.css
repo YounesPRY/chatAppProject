@@ -6,6 +6,7 @@
   background-color: #000;
   overflow: hidden;
   flex: 1;
+  position: relative;
 }
 
 .chat-window-empty {
@@ -32,4 +33,5 @@
   margin: 0;
   color: #999;
 }
+
 

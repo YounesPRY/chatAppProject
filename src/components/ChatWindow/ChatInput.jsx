@@ -1,11 +1,8 @@
 import { useState, useRef, useEffect } from "react";
+import PropTypes from "prop-types";
 import EmojiPicker from "emoji-picker-react";
+import { MESSAGE_SENDER } from "../../utils/chatHelpers";
 import "./ChatInput.css";
-
-const MESSAGE_SENDER = {
-  CURRENT_USER: "current-user",
-  OTHER_USER: "other-user"
-};
 
 function ChatInput({ onSendMessage }) {
   const [message, setMessage] = useState("");
@@ -110,6 +107,10 @@ function ChatInput({ onSendMessage }) {
     </div>
   );
 }
+
+ChatInput.propTypes = {
+  onSendMessage: PropTypes.func.isRequired
+};
 
 export default ChatInput;
 

@@ -1,22 +1,17 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import PropTypes from "prop-types";
 import ChatHeader from "./ChatHeader";
 import MessageList from "./MessageList";
 import ChatInput from "./ChatInput";
 import "./ChatWindow.css";
 
-function ChatWindow({ chat, onMessageSent }) {
-  const [chatMessages, setChatMessages] = useState([]);
+function ChatWindow({ chat, onMessageSent, onCloseChat }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [isSearchActive, setIsSearchActive] = useState(false);
+  const messagesEndRef = useRef(null);
 
-  // Update messages when chat changes
+  // Reset search when chat changes
   useEffect(() => {
-    if (chat && chat.messages) {
-      setChatMessages(chat.messages);
-    } else {
-      setChatMessages([]);
-    }
-    // Reset search when chat changes
     setSearchTerm("");
     setIsSearchActive(false);
   }, [chat]);
@@ -64,12 +59,24 @@ function ChatWindow({ chat, onMessageSent }) {
         searchTerm={searchTerm}
         onSearchToggle={handleSearchToggle}
         onSearchChange={handleSearchChange}
+        onCloseChat={onCloseChat}
       />
-      <MessageList messages={chatMessages} searchTerm={searchTerm} userStatus={chat.user.status} />
+      <MessageList 
+        messages={chat.messages || []} 
+        searchTerm={searchTerm} 
+        userStatus={chat.user.status}
+        messagesEndRef={messagesEndRef}
+      />
       <ChatInput onSendMessage={handleSendMessage} />
     </div>
   );
 }
+
+ChatWindow.propTypes = {
+  chat: PropTypes.object,
+  onMessageSent: PropTypes.func.isRequired,
+  onCloseChat: PropTypes.func.isRequired
+};
 
 export default ChatWindow;
 

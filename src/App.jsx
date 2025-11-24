@@ -14,6 +14,11 @@ function App() {
     setSelectedChat(chat);
   };
 
+  // Handle close chat - clear selected chat
+  const handleCloseChat = () => {
+    setSelectedChat(null);
+  };
+
   // Handle message sent - call Sidebar's handler
   const handleMessageSent = (chatId, newMessage) => {
     if (messageSentHandlerRef.current) {
@@ -31,10 +36,12 @@ function App() {
       <Sidebar 
         onSelectedChatChange={handleSelectedChatChange}
         onMessageSentHandler={handleMessageSentHandler}
+        selectedChat={selectedChat}
       />
       <ChatWindow 
         chat={selectedChat}
         onMessageSent={handleMessageSent}
+        onCloseChat={handleCloseChat}
       />
     </div>
   );

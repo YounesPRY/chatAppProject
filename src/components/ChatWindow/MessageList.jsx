@@ -1,27 +1,39 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useMemo, useState, useCallback } from "react";
+import PropTypes from "prop-types";
 import MessageBubble from "./MessageBubble";
 import MessageDateSeparator from "./MessageDateSeparator";
+import { MESSAGE_SENDER } from "../../utils/chatHelpers";
 import "./MessageList.css";
 
-const MESSAGE_SENDER = {
-  CURRENT_USER: "current-user",
-  OTHER_USER: "other-user"
-};
-
-function MessageList({ messages = [], searchTerm = "", userStatus }) {
-  const messagesEndRef = useRef(null);
+function MessageList({ messages = [], searchTerm = "", userStatus, messagesEndRef }) {
+  const internalEndRef = useRef(null);
+  const endRef = messagesEndRef || internalEndRef;
+  const listRef = useRef(null);
+  const [showScrollButton, setShowScrollButton] = useState(false);
 
   // Filter messages based on search term
-  const filteredMessages = searchTerm
-    ? messages.filter((message) =>
-        message.text.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    : messages;
+  const filteredMessages = useMemo(() => {
+    if (!searchTerm) return messages;
+    return messages.filter((message) =>
+      message.text.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [messages, searchTerm]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [filteredMessages]);
+
+  const handleScrollPosition = useCallback(() => {
+    if (!listRef.current) return;
+    const { scrollTop, scrollHeight, clientHeight } = listRef.current;
+    const isAtBottom = scrollHeight - (scrollTop + clientHeight) <= 80;
+    setShowScrollButton(!isAtBottom);
+  }, []);
+
+  useEffect(() => {
+    handleScrollPosition();
+  }, [filteredMessages, handleScrollPosition]);
 
   // Group messages by day
   const groupMessagesByDay = (messages) => {
@@ -75,8 +87,14 @@ function MessageList({ messages = [], searchTerm = "", userStatus }) {
     );
   }
 
+  const handleScrollToBottom = () => {
+    endRef.current?.scrollIntoView({ behavior: "smooth" });
+    listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
+    setShowScrollButton(false);
+  };
+
   return (
-    <div className="message-list">
+    <div className="message-list" ref={listRef} onScroll={handleScrollPosition}>
       {messageGroups.map((group, groupIndex) => (
         <div key={group.dayKey} className="message-group">
           <MessageDateSeparator date={group.date} />
@@ -95,10 +113,33 @@ function MessageList({ messages = [], searchTerm = "", userStatus }) {
           </div>
         </div>
       ))}
-      <div ref={messagesEndRef} />
+      <div ref={endRef} />
+      {filteredMessages.length > 0 && showScrollButton && (
+        <button 
+          type="button"
+          className="scroll-to-bottom-btn message-list-scroll-btn"
+          onClick={handleScrollToBottom}
+          aria-label="Scroll to latest message"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <path d="M12 5v14" />
+            <path d="M19 12l-7 7-7-7" />
+          </svg>
+        </button>
+      )}
     </div>
   );
 }
+
+MessageList.propTypes = {
+  messages: PropTypes.arrayOf(PropTypes.object),
+  searchTerm: PropTypes.string,
+  userStatus: PropTypes.string,
+  messagesEndRef: PropTypes.oneOfType([
+    PropTypes.func,
+    PropTypes.shape({ current: PropTypes.any })
+  ])
+};
 
 export default MessageList;
 

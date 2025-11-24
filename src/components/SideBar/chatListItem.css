@@ -76,7 +76,7 @@
 /* active / selected state */
 .chat_container.active,
 .chat_container.chat-selected {
-  background: rgba(255,255,255,0.08);
+  background: #374151; /* dark gray background */
   border-color: rgba(255,255,255,0.12);
   box-shadow: 0 0 0 1px rgba(255,255,255,0.1), var(--shadow-hover);
 }
