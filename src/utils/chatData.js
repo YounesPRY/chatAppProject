@@ -31,7 +31,14 @@ export const initialChats = [
       { id: "m1", sender: MESSAGE_SENDER.CURRENT_USER, text: "message1", createdAt: "2025-11-01T14:30:00", messageState: "sent", readedByUser: "no" },
       { id: "m2", sender: MESSAGE_SENDER.OTHER_USER, text: "message2", createdAt: "2025-11-05T18:15:50", messageState: "recieved", readedByMe: "yes" },
       { id: "m3", sender: MESSAGE_SENDER.CURRENT_USER, text: "message3", createdAt: "2025-11-12T15:01:02", messageState: "sent", readedByUser: "yes" },
-      { id: "m4", sender: MESSAGE_SENDER.OTHER_USER, text: "message4", createdAt: "2025-11-17T13:50:00", messageState: "recieved", readedByMe: "no" }
+      { id: "m4", sender: MESSAGE_SENDER.OTHER_USER, text: "message4", createdAt: "2025-11-17T13:50:00", messageState: "recieved", readedByMe: "no" },
+      { id: "m5", sender: MESSAGE_SENDER.OTHER_USER, text: "message4", createdAt: "2025-11-17T13:50:00", messageState: "recieved", readedByMe: "no" },
+      { id: "m6", sender: MESSAGE_SENDER.OTHER_USER, text: "message4", createdAt: "2025-11-17T13:50:00", messageState: "recieved", readedByMe: "no" },
+      { id: "m10", sender: MESSAGE_SENDER.OTHER_USER, text: "message4", createdAt: "2025-11-17T13:50:00", messageState: "recieved", readedByMe: "no" },
+      { id: "m11", sender: MESSAGE_SENDER.OTHER_USER, text: "message4", createdAt: "2025-11-17T13:50:00", messageState: "recieved", readedByMe: "no" },
+      { id: "m12", sender: MESSAGE_SENDER.OTHER_USER, text: "message4", createdAt: "2025-11-17T13:50:00", messageState: "recieved", readedByMe: "no" },
+      { id: "m13", sender: MESSAGE_SENDER.OTHER_USER, text: "message4", createdAt: "2025-11-17T13:50:00", messageState: "recieved", readedByMe: "no" },
+      { id: "m14", sender: MESSAGE_SENDER.OTHER_USER, text: "message4", createdAt: "2025-11-17T13:50:00", messageState: "recieved", readedByMe: "no" }
     ]
   },
   {

@@ -3,7 +3,7 @@
   flex-direction: column;
   height: 100vh;
   width: 100%;
-  background-color: #000;
+  background-color: var(--color-bg-primary);
   overflow: hidden;
   flex: 1;
   position: relative;
@@ -15,23 +15,48 @@
   justify-content: center;
   height: 100vh;
   width: 100%;
-  background-color: #000;
+  background: radial-gradient(circle at center, var(--color-bg-secondary) 0%, var(--color-bg-primary) 100%);
   flex: 1;
 }
 
 .chat-window-empty-content {
   text-align: center;
-  color: #666;
+  color: var(--color-text-tertiary);
+  animation: fadeIn var(--transition-slow) ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .chat-window-empty-content svg {
-  margin-bottom: 16px;
+  margin-bottom: var(--spacing-lg);
+  opacity: 0.4;
+  transition: opacity var(--transition-base);
+}
+
+.chat-window-empty-content:hover svg {
+  opacity: 0.6;
 }
 
 .chat-window-empty-content p {
-  font-size: 16px;
+  font-size: var(--font-size-base);
   margin: 0;
-  color: #999;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
 }
 
-
+.chat-window-empty-content p:first-of-type {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  margin-bottom: var(--spacing-sm);
+  color: var(--color-text-primary);
+}

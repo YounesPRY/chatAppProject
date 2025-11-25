@@ -5,11 +5,12 @@ import MessageDateSeparator from "./MessageDateSeparator";
 import { MESSAGE_SENDER } from "../../utils/chatHelpers";
 import "./MessageList.css";
 
-function MessageList({ messages = [], searchTerm = "", userStatus, messagesEndRef }) {
+function MessageList({ messages = [], searchTerm = "", userStatus, messagesEndRef, onMessageEdit, onMessageDelete }) {
   const internalEndRef = useRef(null);
   const endRef = messagesEndRef || internalEndRef;
   const listRef = useRef(null);
   const [showScrollButton, setShowScrollButton] = useState(false);
+  const previousMessageCountRef = useRef(messages.length);
 
   // Filter messages based on search term
   const filteredMessages = useMemo(() => {
@@ -19,10 +20,19 @@ function MessageList({ messages = [], searchTerm = "", userStatus, messagesEndRe
     );
   }, [messages, searchTerm]);
 
-  // Scroll to bottom when messages change
+  // Scroll to bottom only when NEW messages are added (not on edit/delete)
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [filteredMessages]);
+    const currentCount = filteredMessages.length;
+    const previousCount = previousMessageCountRef.current;
+
+    // Only scroll if message count increased (new message added)
+    if (currentCount > previousCount) {
+      endRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+
+    // Update the ref for next comparison
+    previousMessageCountRef.current = currentCount;
+  }, [filteredMessages, endRef]);
 
   const handleScrollPosition = useCallback(() => {
     if (!listRef.current) return;
@@ -95,7 +105,7 @@ function MessageList({ messages = [], searchTerm = "", userStatus, messagesEndRe
 
   return (
     <div className="message-list" ref={listRef} onScroll={handleScrollPosition}>
-      {messageGroups.map((group, groupIndex) => (
+      {messageGroups.map((group) => (
         <div key={group.dayKey} className="message-group">
           <MessageDateSeparator date={group.date} />
           <div className="message-group-content">
@@ -107,6 +117,8 @@ function MessageList({ messages = [], searchTerm = "", userStatus, messagesEndRe
                   message={message}
                   isSent={isSent}
                   userStatus={userStatus}
+                  onEdit={(newText) => onMessageEdit && onMessageEdit(message.id, newText)}
+                  onDelete={() => onMessageDelete && onMessageDelete(message.id)}
                 />
               );
             })}
@@ -115,7 +127,7 @@ function MessageList({ messages = [], searchTerm = "", userStatus, messagesEndRe
       ))}
       <div ref={endRef} />
       {filteredMessages.length > 0 && showScrollButton && (
-        <button 
+        <button
           type="button"
           className="scroll-to-bottom-btn message-list-scroll-btn"
           onClick={handleScrollToBottom}
@@ -138,7 +150,9 @@ MessageList.propTypes = {
   messagesEndRef: PropTypes.oneOfType([
     PropTypes.func,
     PropTypes.shape({ current: PropTypes.any })
-  ])
+  ]),
+  onMessageEdit: PropTypes.func,
+  onMessageDelete: PropTypes.func
 };
 
 export default MessageList;

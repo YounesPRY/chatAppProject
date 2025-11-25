@@ -1,4 +1,4 @@
-import ChatListItem from "./ChatListItem"; 
+import ChatListItem from "./ChatListItem";
 import SearchChats from "./SearchChats";
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import PropTypes from "prop-types";
@@ -29,9 +29,9 @@ export default function Sidebar({ onSelectedChatChange, onMessageSentHandler, se
 
   // Helper: Update chat messages to mark as read
   const updateChatMessagesAsRead = useCallback((chatId) => {
-    setChats(prevChats => 
-      prevChats.map(chat => 
-        chat._id === chatId 
+    setChats(prevChats =>
+      prevChats.map(chat =>
+        chat._id === chatId
           ? { ...chat, messages: markMessagesAsRead(chat.messages) }
           : chat
       )
@@ -43,7 +43,7 @@ export default function Sidebar({ onSelectedChatChange, onMessageSentHandler, se
     if (isInternalChangeRef.current) {
       return; // Skip sync if change came from internal user interaction
     }
-    
+
     const parentId = parentSelectedChat?._id || null;
     if (parentId !== selectedChatId) {
       setSelectedChatId(parentId);
@@ -54,7 +54,7 @@ export default function Sidebar({ onSelectedChatChange, onMessageSentHandler, se
   }, [parentSelectedChat, selectedChatId, updateChatMessagesAsRead]);
 
   // Get selected chat
-  const selectedChat = useMemo(() => 
+  const selectedChat = useMemo(() =>
     normalizedChats.find(chat => chat._id === selectedChatId) || null,
     [normalizedChats, selectedChatId]
   );
@@ -91,8 +91,8 @@ export default function Sidebar({ onSelectedChatChange, onMessageSentHandler, se
   // Handle new message sent - update chats state
   const handleMessageSent = useCallback((chatId, newMessage) => {
     isMessageUpdateRef.current = true;
-    setChats(prevChats => 
-      prevChats.map(chat => 
+    setChats(prevChats =>
+      prevChats.map(chat =>
         chat._id === chatId
           ? { ...chat, messages: [...chat.messages, newMessage] }
           : chat
@@ -100,19 +100,57 @@ export default function Sidebar({ onSelectedChatChange, onMessageSentHandler, se
     );
   }, []);
 
-  // Expose handleMessageSent to parent
+  // Handle message edit - update chats state
+  const handleMessageEdit = useCallback((chatId, messageId, newText) => {
+    isMessageUpdateRef.current = true;
+    setChats(prevChats =>
+      prevChats.map(chat =>
+        chat._id === chatId
+          ? {
+            ...chat,
+            messages: chat.messages.map(msg =>
+              msg.id === messageId
+                ? { ...msg, text: newText, isEdited: true }
+                : msg
+            )
+          }
+          : chat
+      )
+    );
+  }, []);
+
+  // Handle message delete - update chats state
+  const handleMessageDelete = useCallback((chatId, messageId) => {
+    isMessageUpdateRef.current = true;
+    setChats(prevChats =>
+      prevChats.map(chat =>
+        chat._id === chatId
+          ? {
+            ...chat,
+            messages: chat.messages.filter(msg => msg.id !== messageId)
+          }
+          : chat
+      )
+    );
+  }, []);
+
+  // Expose handlers to parent
   useEffect(() => {
     if (onMessageSentHandler) {
-      onMessageSentHandler(handleMessageSent);
+      onMessageSentHandler({
+        handleMessageSent,
+        handleMessageEdit,
+        handleMessageDelete
+      });
     }
-  }, [onMessageSentHandler, handleMessageSent]);
+  }, [onMessageSentHandler, handleMessageSent, handleMessageEdit, handleMessageDelete]);
 
   return (
     <div className="sidebar">
       <SearchChats chats={normalizedChats} onFilter={setFilteredChats} />
       {filteredChats.map(chat => (
-        <ChatListItem 
-          key={chat._id} 
+        <ChatListItem
+          key={chat._id}
           chat={chat}
           isSelected={selectedChatId === chat._id}
           onSelect={() => handleChatSelect(chat)}

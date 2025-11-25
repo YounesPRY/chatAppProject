@@ -3,17 +3,17 @@
   height: 100vh;
   width: 100vw;
   overflow: hidden;
-  background-color: #000;
+  background: linear-gradient(135deg, var(--color-bg-primary) 0%, var(--color-bg-secondary) 100%);
 }
 
 /* Sidebar should not shrink */
-.app-container > *:first-child {
+.app-container>*:first-child {
   flex-shrink: 0;
+  border-right: 1px solid var(--color-border);
 }
 
 /* Chat window should take remaining space */
-.app-container > *:last-child {
+.app-container>*:last-child {
   flex: 1;
   min-width: 0;
 }
-

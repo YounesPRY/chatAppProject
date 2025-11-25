@@ -5,7 +5,7 @@ import MessageList from "./MessageList";
 import ChatInput from "./ChatInput";
 import "./ChatWindow.css";
 
-function ChatWindow({ chat, onMessageSent, onCloseChat }) {
+function ChatWindow({ chat, onMessageSent, onMessageEdit, onMessageDelete, onCloseChat }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [isSearchActive, setIsSearchActive] = useState(false);
   const messagesEndRef = useRef(null);
@@ -51,9 +51,21 @@ function ChatWindow({ chat, onMessageSent, onCloseChat }) {
     setSearchTerm(term);
   };
 
+  const handleMessageEdit = (messageId, newText) => {
+    if (onMessageEdit && chat) {
+      onMessageEdit(chat._id, messageId, newText);
+    }
+  };
+
+  const handleMessageDelete = (messageId) => {
+    if (onMessageDelete && chat) {
+      onMessageDelete(chat._id, messageId);
+    }
+  };
+
   return (
     <div className="chat-window">
-      <ChatHeader 
+      <ChatHeader
         chat={chat}
         isSearchActive={isSearchActive}
         searchTerm={searchTerm}
@@ -61,11 +73,13 @@ function ChatWindow({ chat, onMessageSent, onCloseChat }) {
         onSearchChange={handleSearchChange}
         onCloseChat={onCloseChat}
       />
-      <MessageList 
-        messages={chat.messages || []} 
-        searchTerm={searchTerm} 
+      <MessageList
+        messages={chat.messages || []}
+        searchTerm={searchTerm}
         userStatus={chat.user.status}
         messagesEndRef={messagesEndRef}
+        onMessageEdit={handleMessageEdit}
+        onMessageDelete={handleMessageDelete}
       />
       <ChatInput onSendMessage={handleSendMessage} />
     </div>
@@ -75,6 +89,8 @@ function ChatWindow({ chat, onMessageSent, onCloseChat }) {
 ChatWindow.propTypes = {
   chat: PropTypes.object,
   onMessageSent: PropTypes.func.isRequired,
+  onMessageEdit: PropTypes.func,
+  onMessageDelete: PropTypes.func,
   onCloseChat: PropTypes.func.isRequired
 };
 

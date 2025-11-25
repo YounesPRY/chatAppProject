@@ -7,7 +7,11 @@ import "./App.css";
 
 function App() {
   const [selectedChat, setSelectedChat] = useState(null);
-  const messageSentHandlerRef = useRef(null);
+  const messageHandlersRef = useRef({
+    handleMessageSent: null,
+    handleMessageEdit: null,
+    handleMessageDelete: null
+  });
 
   // Handle selected chat change from Sidebar
   const handleSelectedChatChange = (chat) => {
@@ -21,26 +25,42 @@ function App() {
 
   // Handle message sent - call Sidebar's handler
   const handleMessageSent = (chatId, newMessage) => {
-    if (messageSentHandlerRef.current) {
-      messageSentHandlerRef.current(chatId, newMessage);
+    if (messageHandlersRef.current.handleMessageSent) {
+      messageHandlersRef.current.handleMessageSent(chatId, newMessage);
     }
   };
 
-  // Store message sent handler from Sidebar
-  const handleMessageSentHandler = (handler) => {
-    messageSentHandlerRef.current = handler;
+  // Handle message edit - call Sidebar's handler
+  const handleMessageEdit = (chatId, messageId, newText) => {
+    if (messageHandlersRef.current.handleMessageEdit) {
+      messageHandlersRef.current.handleMessageEdit(chatId, messageId, newText);
+    }
+  };
+
+  // Handle message delete - call Sidebar's handler
+  const handleMessageDelete = (chatId, messageId) => {
+    if (messageHandlersRef.current.handleMessageDelete) {
+      messageHandlersRef.current.handleMessageDelete(chatId, messageId);
+    }
+  };
+
+  // Store message handlers from Sidebar
+  const handleMessageHandlers = (handlers) => {
+    messageHandlersRef.current = handlers;
   };
 
   return (
     <div className="app-container">
-      <Sidebar 
+      <Sidebar
         onSelectedChatChange={handleSelectedChatChange}
-        onMessageSentHandler={handleMessageSentHandler}
+        onMessageSentHandler={handleMessageHandlers}
         selectedChat={selectedChat}
       />
-      <ChatWindow 
+      <ChatWindow
         chat={selectedChat}
         onMessageSent={handleMessageSent}
+        onMessageEdit={handleMessageEdit}
+        onMessageDelete={handleMessageDelete}
         onCloseChat={handleCloseChat}
       />
     </div>
