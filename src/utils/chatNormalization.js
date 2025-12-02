@@ -7,9 +7,10 @@ import {
 export const normalizeChats = (chats) => {
   return chats.map((chat) => {
     // Add displayTime to each message
+    // Handle both createdAt (legacy) and timestamp (Spring Boot) fields
     const messages = chat.messages.map((m) => ({
       ...m,
-      displayTime: formatMessageTimestamp(m.createdAt)
+      displayTime: formatMessageTimestamp(m.createdAt || m.timestamp)
     }));
 
     const lastMessage = getLastMessageFromArray(messages) || null;

@@ -2,7 +2,7 @@ import ChatListItem from "./ChatListItem";
 import SearchChats from "./SearchChats";
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import PropTypes from "prop-types";
-import { initialChats } from "../../utils/chatData";
+import { initialChats } from "../../utils/chatDataAdapter";
 import { normalizeChats } from "../../utils/chatNormalization";
 import { markMessagesAsRead } from "../../utils/chatHelpers";
 

@@ -28,7 +28,7 @@ export const formatMessageTimestamp = (dateString) => {
   let messageDate = new Date(dateString);
   if (Number.isNaN(messageDate.getTime()) && /^\d{4}\/\d{1,2}\/\d{1,2}$/.test(dateString)) {
     const parts = dateString.split("/");
-    messageDate = new Date(`${parts[0]}-${parts[1].padStart(2,"0")}-${parts[2].padStart(2,"0")}T00:00:00`);
+    messageDate = new Date(`${parts[0]}-${parts[1].padStart(2, "0")}-${parts[2].padStart(2, "0")}T00:00:00`);
   }
   if (Number.isNaN(messageDate.getTime())) return dateString;
 
@@ -79,7 +79,12 @@ export const isUnreadForMe = (msg = {}) => {
 
 export const getLastMessageFromArray = (messagesArray = []) => {
   if (!messagesArray || !messagesArray.length) return null;
-  const sorted = [...messagesArray].sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+  // Handle both createdAt (legacy) and timestamp (Spring Boot) fields
+  const sorted = [...messagesArray].sort((a, b) => {
+    const dateA = new Date(a.createdAt || a.timestamp);
+    const dateB = new Date(b.createdAt || b.timestamp);
+    return dateB - dateA;
+  });
   return sorted[0];
 };
 
