@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import ConfirmDialog from "../ConfirmDialog/ConfirmDialog";
 import "./MessageBubble.css";
 
-function MessageBubble({ message, isSent, userStatus, onEdit, onDelete }) {
+function MessageBubble({ message, isSent, isLast, userStatus, onEdit, onDelete, onCopy, onReply, onForward }) {
   if (!message) return null;
 
   // Format time for message bubble (just time, not full timestamp)
@@ -90,31 +90,134 @@ function MessageBubble({ message, isSent, userStatus, onEdit, onDelete }) {
     setShowDeleteConfirm(false);
   };
 
+  const handleCopyClick = async () => {
+    try {
+      await navigator.clipboard.writeText(message.text);
+      if (onCopy) {
+        onCopy(message);
+      }
+    } catch (err) {
+      // Fallback for older browsers
+      const textArea = document.createElement("textarea");
+      textArea.value = message.text;
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        if (onCopy) {
+          onCopy(message);
+        }
+      } catch (fallbackErr) {
+        console.error('Failed to copy message:', fallbackErr);
+      }
+      document.body.removeChild(textArea);
+    }
+  };
+
+  const handleReplyClick = () => {
+    if (onReply) {
+      onReply(message);
+    }
+  };
+
+  const handleForwardClick = () => {
+    if (onForward) {
+      onForward(message);
+    }
+  };
+
+  const [showMenu, setShowMenu] = useState(false);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowMenu(false);
+      }
+    };
+
+    if (showMenu) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showMenu]);
+
+  const handleMenuToggle = (e) => {
+    e.stopPropagation();
+    setShowMenu(!showMenu);
+  };
+
+  const onActionClick = (action) => {
+    setShowMenu(false);
+    action();
+  };
+
   return (
-    <div className={`message-bubble ${isSent ? "message-sent" : "message-received"}`}>
+    <div id={`msg-${message.id}`} className={`message-bubble ${isSent ? "message-sent" : "message-received"} ${showMenu ? "menu-open" : ""} ${isLast ? "message-last" : ""}`}>
       <div className="message-content">
-        {isSent && !isEditing && (
-          <div className="message-actions">
+        {!isEditing && (
+          <div className="message-actions-menu-container" ref={menuRef}>
             <button
-              className="message-action-btn edit-btn"
-              onClick={handleEditClick}
-              aria-label="Edit message"
+              className={`message-menu-btn ${showMenu ? 'active' : ''}`}
+              onClick={handleMenuToggle}
+              aria-label="Message options"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                <circle cx="12" cy="12" r="1"></circle>
+                <circle cx="12" cy="5" r="1"></circle>
+                <circle cx="12" cy="19" r="1"></circle>
               </svg>
             </button>
-            <button
-              className="message-action-btn delete-btn"
-              onClick={handleDeleteClick}
-              aria-label="Delete message"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="3 6 5 6 21 6"></polyline>
-                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-              </svg>
-            </button>
+
+            {showMenu && (
+              <div className={`message-dropdown-menu ${isLast ? "dropdown-up" : ""}`}>
+                <button className="dropdown-item" onClick={() => onActionClick(handleReplyClick)}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="9 14 4 9 9 4"></polyline>
+                    <path d="M20 20v-7a4 4 0 0 0-4-4H4"></path>
+                  </svg>
+                  <span>Reply</span>
+                </button>
+
+                <button className="dropdown-item" onClick={() => onActionClick(handleCopyClick)}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                  </svg>
+                  <span>Copy</span>
+                </button>
+
+                <button className="dropdown-item" onClick={() => onActionClick(handleForwardClick)}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="15 10 20 15 15 20"></polyline>
+                    <path d="M4 4v7a4 4 0 0 0 4 4h12"></path>
+                  </svg>
+                  <span>Forward</span>
+                </button>
+
+                {isSent && (
+                  <>
+                    <div className="dropdown-divider"></div>
+                    <button className="dropdown-item" onClick={() => onActionClick(handleEditClick)}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                      </svg>
+                      <span>Edit</span>
+                    </button>
+                    <button className="dropdown-item delete" onClick={() => onActionClick(handleDeleteClick)}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                      </svg>
+                      <span>Delete</span>
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
           </div>
         )}
 
@@ -133,10 +236,23 @@ function MessageBubble({ message, isSent, userStatus, onEdit, onDelete }) {
             </div>
           </div>
         ) : (
-          <p className="message-text">
-            {message.text}
-            {message.isEdited && <span className="message-edited-label"> (edited)</span>}
-          </p>
+          <>
+            {/* Show reply context if this message is a reply */}
+            {message.replyTo && (
+              <div className="message-reply-context">
+                <div className="message-reply-bar"></div>
+                <div className="message-reply-content">
+                  <span className="message-reply-text">{message.replyTo.text}</span>
+                </div>
+              </div>
+            )}
+
+            <p className="message-text">
+              {message.isForwarded && <span className="message-forwarded-label">↗ Forwarded</span>}
+              {message.text}
+              {message.isEdited && <span className="message-edited-label"> (edited)</span>}
+            </p>
+          </>
         )}
 
         <div className="message-footer">
@@ -165,9 +281,20 @@ function MessageBubble({ message, isSent, userStatus, onEdit, onDelete }) {
         onConfirm={handleConfirmDelete}
         onCancel={handleCancelDelete}
       />
-    </div>
+    </div >
   );
 }
 
-export default MessageBubble;
+MessageBubble.propTypes = {
+  message: PropTypes.object.isRequired,
+  isSent: PropTypes.bool.isRequired,
+  isLast: PropTypes.bool,
+  userStatus: PropTypes.string,
+  onEdit: PropTypes.func,
+  onDelete: PropTypes.func,
+  onCopy: PropTypes.func,
+  onReply: PropTypes.func,
+  onForward: PropTypes.func
+};
 
+export default MessageBubble;

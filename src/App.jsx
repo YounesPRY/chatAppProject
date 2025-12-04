@@ -7,6 +7,7 @@ import "./App.css";
 
 function App() {
   const [selectedChat, setSelectedChat] = useState(null);
+  const [chats, setChats] = useState([]);
   const messageHandlersRef = useRef({
     handleMessageSent: null,
     handleMessageEdit: null,
@@ -16,6 +17,11 @@ function App() {
   // Handle selected chat change from Sidebar
   const handleSelectedChatChange = (chat) => {
     setSelectedChat(chat);
+  };
+
+  // Handle chats update from Sidebar
+  const handleChatsUpdate = (updatedChats) => {
+    setChats(updatedChats);
   };
 
   // Handle close chat - clear selected chat
@@ -54,10 +60,12 @@ function App() {
       <Sidebar
         onSelectedChatChange={handleSelectedChatChange}
         onMessageSentHandler={handleMessageHandlers}
+        onChatsUpdate={handleChatsUpdate}
         selectedChat={selectedChat}
       />
       <ChatWindow
         chat={selectedChat}
+        chats={chats}
         onMessageSent={handleMessageSent}
         onMessageEdit={handleMessageEdit}
         onMessageDelete={handleMessageDelete}

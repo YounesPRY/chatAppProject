@@ -4,6 +4,12 @@
   max-width: 70%;
   word-wrap: break-word;
   animation: slideIn 0.2s ease-out;
+  position: relative;
+  /* Ensure z-index works */
+}
+
+.message-bubble.menu-open {
+  z-index: 100;
 }
 
 @keyframes slideIn {
@@ -108,57 +114,146 @@
   color: var(--color-primary);
 }
 
-.message-bubble .message-actions {
+/* Message Actions Menu */
+.message-actions-menu-container {
   position: absolute;
   top: var(--spacing-sm);
   right: var(--spacing-sm);
-  display: none;
-  gap: var(--spacing-sm);
+  z-index: 10;
+  opacity: 0;
+  transition: opacity 0.2s ease;
 }
 
-.message-bubble.message-sent .message-content:hover .message-actions {
-  display: flex;
-  align-items: center;
-  animation: fadeIn 0.2s ease-out;
+.message-bubble .message-content:hover .message-actions-menu-container,
+.message-actions-menu-container:has(.active) {
+  opacity: 1;
 }
 
-.message-action-btn {
-  background: rgba(0, 0, 0, 0.4);
+.message-menu-btn {
+  background: rgba(0, 0, 0, 0.2);
   border: none;
-  color: rgba(255, 255, 255, 0.95);
+  color: rgba(255, 255, 255, 0.9);
   cursor: pointer;
-  padding: var(--spacing-sm) 10px;
-  border-radius: var(--radius-md);
-  transition: all var(--transition-base);
+  padding: 4px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  backdrop-filter: blur(8px);
-  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-base);
+  backdrop-filter: blur(4px);
 }
 
-.message-action-btn svg {
+.message-menu-btn:hover,
+.message-menu-btn.active {
+  background: rgba(0, 0, 0, 0.4);
+  transform: scale(1.1);
+}
+
+/* Received message menu button */
+.message-received .message-menu-btn {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--color-text-secondary);
+}
+
+.message-received .message-menu-btn:hover,
+.message-received .message-menu-btn.active {
+  background: rgba(0, 0, 0, 0.1);
+  color: var(--color-text-primary);
+}
+
+/* Dropdown Menu */
+.message-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: 4px;
+  min-width: 140px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  animation: menuSlideIn 0.2s ease-out;
+  overflow: hidden;
+}
+
+@keyframes menuSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes menuSlideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.message-dropdown-menu.dropdown-up {
+  top: auto;
+  bottom: 100%;
+  margin-top: 0;
+  margin-bottom: 4px;
+  animation: menuSlideInUp 0.2s ease-out;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  width: 100%;
+  text-align: left;
+  transition: background-color 0.2s;
+}
+
+.dropdown-item:hover {
+  background: var(--color-surface-hover);
+}
+
+.dropdown-item svg {
   width: 16px;
   height: 16px;
+  opacity: 0.7;
 }
 
-.message-action-btn.edit-btn:hover {
-  background: rgba(255, 255, 255, 0.25);
-  color: white;
-  transform: scale(1.08);
-  box-shadow: var(--shadow-md);
+.dropdown-item:hover svg {
+  opacity: 1;
 }
 
-.message-action-btn.delete-btn {
-  background: var(--color-danger-light);
+.dropdown-divider {
+  height: 1px;
+  background: var(--color-border);
+  margin: 2px 0;
+}
+
+.dropdown-item.delete {
   color: var(--color-danger);
 }
 
-.message-action-btn.delete-btn:hover {
-  background: var(--color-danger);
-  color: white;
-  transform: scale(1.08);
-  box-shadow: 0 4px 12px rgba(255, 59, 48, 0.4);
+.dropdown-item.delete:hover {
+  background: var(--color-danger-light);
 }
 
 .message-edit-container {
@@ -229,6 +324,53 @@
   color: var(--color-text-primary);
 }
 
+.message-reply-context {
+  display: flex;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+}
+
+.message-sent .message-reply-context {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.message-reply-bar {
+  width: 3px;
+  background: var(--color-primary);
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.message-reply-content {
+  flex: 1;
+  overflow: hidden;
+}
+
+.message-reply-text {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.8;
+  font-style: italic;
+}
+
+.message-forwarded-label {
+  display: block;
+  font-size: var(--font-size-xs);
+  color: var(--color-primary);
+  font-weight: 600;
+  margin-bottom: var(--spacing-xs);
+}
+
+.message-sent .message-forwarded-label {
+  color: rgba(255, 255, 255, 0.8);
+}
+
 .message-edited-label {
   font-size: var(--font-size-xs);
   color: rgba(255, 255, 255, 0.5);
@@ -238,4 +380,40 @@
 
 .message-content {
   position: relative;
+}
+
+/* Highlight animation for searched messages */
+@keyframes highlightPulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(var(--color-primary-rgb), 0.4);
+  }
+
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 0 0 10px rgba(var(--color-primary-rgb), 0);
+  }
+
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(var(--color-primary-rgb), 0);
+  }
+}
+
+.message-highlight .message-content {
+  animation: highlightPulse 1s ease-in-out;
+  position: relative;
+  z-index: 5;
+}
+
+.message-received.message-highlight .message-content {
+  background-color: var(--color-bg-tertiary);
+  /* Slightly darker/different than normal received */
+  border-color: var(--color-primary);
+  border-width: 2px;
+}
+
+.message-sent.message-highlight .message-content {
+  filter: brightness(1.1);
+  box-shadow: 0 0 15px rgba(var(--color-primary-rgb), 0.5);
 }

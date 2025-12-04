@@ -4,11 +4,18 @@ import EmojiPicker from "emoji-picker-react";
 import { MESSAGE_SENDER } from "../../utils/chatHelpers";
 import "./ChatInput.css";
 
-function ChatInput({ onSendMessage }) {
+function ChatInput({ onSendMessage, replyToMessage, onCancelReply }) {
   const [message, setMessage] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const emojiPickerRef = useRef(null);
   const inputRef = useRef(null);
+
+  // Focus input when replying to a message
+  useEffect(() => {
+    if (replyToMessage) {
+      inputRef.current?.focus();
+    }
+  }, [replyToMessage]);
 
   // Close emoji picker when clicking outside
   useEffect(() => {
@@ -47,9 +54,23 @@ function ChatInput({ onSendMessage }) {
       readedByUser: "no"
     };
 
+    // Add reply context if replying to a message
+    if (replyToMessage) {
+      newMessage.replyTo = {
+        id: replyToMessage.id,
+        text: replyToMessage.text,
+        sender: replyToMessage.sender
+      };
+    }
+
     onSendMessage(newMessage);
     setMessage("");
     setShowEmojiPicker(false);
+
+    // Clear reply context after sending
+    if (onCancelReply) {
+      onCancelReply();
+    }
   };
 
   const handleKeyPress = (e) => {
@@ -61,6 +82,30 @@ function ChatInput({ onSendMessage }) {
 
   return (
     <div className="chat-input-container">
+      {replyToMessage && (
+        <div className="reply-banner">
+          <div className="reply-banner-content">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="9 14 4 9 9 4"></polyline>
+              <path d="M20 20v-7a4 4 0 0 0-4-4H4"></path>
+            </svg>
+            <div className="reply-banner-text">
+              <span className="reply-banner-label">Replying to</span>
+              <span className="reply-banner-message">{replyToMessage.text}</span>
+            </div>
+          </div>
+          <button
+            className="reply-banner-close"
+            onClick={onCancelReply}
+            aria-label="Cancel reply"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+      )}
       {showEmojiPicker && (
         <div ref={emojiPickerRef} className="emoji-picker-wrapper">
           <EmojiPicker
@@ -109,7 +154,9 @@ function ChatInput({ onSendMessage }) {
 }
 
 ChatInput.propTypes = {
-  onSendMessage: PropTypes.func.isRequired
+  onSendMessage: PropTypes.func.isRequired,
+  replyToMessage: PropTypes.object,
+  onCancelReply: PropTypes.func
 };
 
 export default ChatInput;

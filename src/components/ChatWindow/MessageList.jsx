@@ -5,34 +5,64 @@ import MessageDateSeparator from "./MessageDateSeparator";
 import { MESSAGE_SENDER } from "../../utils/chatHelpers";
 import "./MessageList.css";
 
-function MessageList({ messages = [], searchTerm = "", userStatus, messagesEndRef, onMessageEdit, onMessageDelete }) {
+function MessageList({ messages = [], searchTerm = "", userStatus, messagesEndRef, onMessageEdit, onMessageDelete, onMessageCopy, onMessageReply, onMessageForward }) {
   const internalEndRef = useRef(null);
   const endRef = messagesEndRef || internalEndRef;
   const listRef = useRef(null);
   const [showScrollButton, setShowScrollButton] = useState(false);
   const previousMessageCountRef = useRef(messages.length);
 
-  // Filter messages based on search term
-  const filteredMessages = useMemo(() => {
-    if (!searchTerm) return messages;
-    return messages.filter((message) =>
-      message.text.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [messages, searchTerm]);
+  // Group messages by date
+  const messageGroups = useMemo(() => {
+    const groups = {};
 
-  // Scroll to bottom only when NEW messages are added (not on edit/delete)
+    messages.forEach(message => {
+      const date = new Date(message.createdAt);
+      const dateKey = date.toLocaleDateString();
+
+      if (!groups[dateKey]) {
+        groups[dateKey] = {
+          date: date,
+          messages: []
+        };
+      }
+      groups[dateKey].messages.push(message);
+    });
+
+    return Object.keys(groups).map(key => ({
+      dayKey: key,
+      date: groups[key].date,
+      messages: groups[key].messages
+    })).sort((a, b) => a.date - b.date);
+  }, [messages]);
+
+  // Handle search scrolling
   useEffect(() => {
-    const currentCount = filteredMessages.length;
-    const previousCount = previousMessageCountRef.current;
+    if (searchTerm && searchTerm.trim() !== "") {
+      const lowerTerm = searchTerm.toLowerCase();
+      // Find first matching message
+      const matchingMessage = messages.find(msg =>
+        msg.text.toLowerCase().includes(lowerTerm)
+      );
 
-    // Only scroll if message count increased (new message added)
-    if (currentCount > previousCount) {
-      endRef.current?.scrollIntoView({ behavior: "smooth" });
+      if (matchingMessage) {
+        const element = document.getElementById(`msg-${matchingMessage.id}`);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          // Optional: Add a temporary highlight class
+          element.classList.add('message-highlight');
+          setTimeout(() => element.classList.remove('message-highlight'), 2000);
+        }
+      }
     }
+  }, [searchTerm, messages]);
 
-    // Update the ref for next comparison
-    previousMessageCountRef.current = currentCount;
-  }, [filteredMessages, endRef]);
+  // Scroll to bottom on new messages if no search term is active
+  useEffect(() => {
+    if (!searchTerm && messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, searchTerm, messagesEndRef]);
 
   const handleScrollPosition = useCallback(() => {
     if (!listRef.current) return;
@@ -43,56 +73,12 @@ function MessageList({ messages = [], searchTerm = "", userStatus, messagesEndRe
 
   useEffect(() => {
     handleScrollPosition();
-  }, [filteredMessages, handleScrollPosition]);
-
-  // Group messages by day
-  const groupMessagesByDay = (messages) => {
-    if (!messages || messages.length === 0) return [];
-
-    const sortedMessages = [...messages].sort(
-      (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
-    );
-
-    const groups = [];
-    let currentGroup = null;
-
-    sortedMessages.forEach((message) => {
-      const messageDate = new Date(message.createdAt);
-      if (Number.isNaN(messageDate.getTime())) return;
-
-      const dayKey = messageDate.toDateString();
-
-      if (!currentGroup || currentGroup.dayKey !== dayKey) {
-        if (currentGroup) {
-          groups.push(currentGroup);
-        }
-        currentGroup = {
-          dayKey,
-          date: message.createdAt,
-          messages: []
-        };
-      }
-
-      currentGroup.messages.push(message);
-    });
-
-    if (currentGroup) {
-      groups.push(currentGroup);
-    }
-
-    return groups;
-  };
-
-  const messageGroups = groupMessagesByDay(filteredMessages);
+  }, [messages, handleScrollPosition]);
 
   if (messageGroups.length === 0) {
     return (
       <div className="message-list-empty">
-        <p>
-          {searchTerm
-            ? `No messages found for "${searchTerm}"`
-            : "No messages yet. Start the conversation!"}
-        </p>
+        <p>No messages yet. Start the conversation!</p>
       </div>
     );
   }
@@ -111,14 +97,19 @@ function MessageList({ messages = [], searchTerm = "", userStatus, messagesEndRe
           <div className="message-group-content">
             {group.messages.map((message) => {
               const isSent = message.sender === MESSAGE_SENDER.CURRENT_USER;
+              const isLast = message.id === messages[messages.length - 1].id;
               return (
                 <MessageBubble
                   key={message.id}
                   message={message}
                   isSent={isSent}
+                  isLast={isLast}
                   userStatus={userStatus}
                   onEdit={(newText) => onMessageEdit && onMessageEdit(message.id, newText)}
                   onDelete={() => onMessageDelete && onMessageDelete(message.id)}
+                  onCopy={(msg) => onMessageCopy && onMessageCopy(msg)}
+                  onReply={(msg) => onMessageReply && onMessageReply(msg)}
+                  onForward={(msg) => onMessageForward && onMessageForward(msg)}
                 />
               );
             })}
@@ -126,7 +117,7 @@ function MessageList({ messages = [], searchTerm = "", userStatus, messagesEndRe
         </div>
       ))}
       <div ref={endRef} />
-      {filteredMessages.length > 0 && showScrollButton && (
+      {messages.length > 0 && showScrollButton && (
         <button
           type="button"
           className="scroll-to-bottom-btn message-list-scroll-btn"
@@ -152,7 +143,10 @@ MessageList.propTypes = {
     PropTypes.shape({ current: PropTypes.any })
   ]),
   onMessageEdit: PropTypes.func,
-  onMessageDelete: PropTypes.func
+  onMessageDelete: PropTypes.func,
+  onMessageCopy: PropTypes.func,
+  onMessageReply: PropTypes.func,
+  onMessageForward: PropTypes.func
 };
 
 export default MessageList;

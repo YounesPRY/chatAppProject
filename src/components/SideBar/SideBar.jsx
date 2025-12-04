@@ -12,7 +12,7 @@ export { normalizeChats };
 
 /* ---------------------- Component ---------------------- */
 
-export default function Sidebar({ onSelectedChatChange, onMessageSentHandler, selectedChat: parentSelectedChat }) {
+export default function Sidebar({ onSelectedChatChange, onMessageSentHandler, onChatsUpdate, selectedChat: parentSelectedChat }) {
   const [chats, setChats] = useState(initialChats);
   const [selectedChatId, setSelectedChatId] = useState(null);
   const [filteredChats, setFilteredChats] = useState([]);
@@ -26,6 +26,13 @@ export default function Sidebar({ onSelectedChatChange, onMessageSentHandler, se
   useEffect(() => {
     setFilteredChats(normalizedChats);
   }, [normalizedChats]);
+
+  // Notify parent when chats change
+  useEffect(() => {
+    if (onChatsUpdate) {
+      onChatsUpdate(normalizedChats);
+    }
+  }, [normalizedChats, onChatsUpdate]);
 
   // Helper: Update chat messages to mark as read
   const updateChatMessagesAsRead = useCallback((chatId) => {
@@ -163,5 +170,6 @@ export default function Sidebar({ onSelectedChatChange, onMessageSentHandler, se
 Sidebar.propTypes = {
   onSelectedChatChange: PropTypes.func,
   onMessageSentHandler: PropTypes.func,
+  onChatsUpdate: PropTypes.func,
   selectedChat: PropTypes.object
 };
