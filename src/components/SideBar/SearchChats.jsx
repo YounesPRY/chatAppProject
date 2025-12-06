@@ -1,24 +1,25 @@
+import "./searchInputStyle.css";
 import { useState } from "react";
 
-function SearchChats({chats , onFilter}) {
-   const [search , setSearch] = useState("");
-   function handelSearch(event) {
+function SearchChats({ chats, onFilter }) {
+    const [search, setSearch] = useState("");
+    function handleSearch(event) {
 
-    const value = event.target.value.trim();
-    setSearch(value);
+        const value = event.target.value; // Don't trim immediately to allow typing space
+        setSearch(value);
 
-    if(!value) {
-        onFilter(chats);
-        return;
+        if (!value.trim()) {
+            onFilter(chats);
+            return;
+        }
+
+        const filtered = chats.filter(chat => chat.user.name.toLowerCase().includes(value.trim().toLowerCase()));
+        onFilter(filtered);
     }
-    
-    const filtred = chats.filter(chat=>chat.user.name.toLowerCase().includes(value.toLowerCase()));
-    onFilter(filtred);
-   }
 
     return (
         <div className="searchBox">
-            <input type="text" placeholder="Search chats" className="searchInput" value={search} onChange={handelSearch}/>
+            <input type="text" placeholder="Search chats" className="searchInput" value={search} onChange={handleSearch} />
         </div>
     );
 }

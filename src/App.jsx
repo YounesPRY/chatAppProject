@@ -1,8 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import Sidebar from "./components/SideBar/SideBar";
 import ChatWindow from "./components/ChatWindow/ChatWindow";
-import "./components/SideBar/chatListItem.css";
-import "./components/SideBar/searchInputStyle.css";
 import "./App.css";
 
 function App() {

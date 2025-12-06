@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import ConfirmDialog from "../ConfirmDialog/ConfirmDialog";
 import "./MessageBubble.css";
 
-function MessageBubble({ message, isSent, isLast, userStatus, onEdit, onDelete, onCopy, onReply, onForward }) {
+function MessageBubble({ message, isSent, isLast, userStatus, onEdit, onDelete, onCopy, onReply, onForward, onReplyClick }) {
   if (!message) return null;
 
   // Format time for message bubble (just time, not full timestamp)
@@ -239,7 +239,11 @@ function MessageBubble({ message, isSent, isLast, userStatus, onEdit, onDelete, 
           <>
             {/* Show reply context if this message is a reply */}
             {message.replyTo && (
-              <div className="message-reply-context">
+              <div
+                className="message-reply-context"
+                onClick={() => onReplyClick && message.replyTo.id && onReplyClick(message.replyTo.id)}
+                style={{ cursor: 'pointer' }}
+              >
                 <div className="message-reply-bar"></div>
                 <div className="message-reply-content">
                   <span className="message-reply-text">{message.replyTo.text}</span>
@@ -294,7 +298,8 @@ MessageBubble.propTypes = {
   onDelete: PropTypes.func,
   onCopy: PropTypes.func,
   onReply: PropTypes.func,
-  onForward: PropTypes.func
+  onForward: PropTypes.func,
+  onReplyClick: PropTypes.func
 };
 
 export default MessageBubble;

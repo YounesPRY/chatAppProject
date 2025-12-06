@@ -404,16 +404,17 @@
   animation: highlightPulse 1s ease-in-out;
   position: relative;
   z-index: 5;
+  background-color: #ff9800 !important;
+  color: #000 !important;
+  border: 2px solid #fff;
 }
 
-.message-received.message-highlight .message-content {
-  background-color: var(--color-bg-tertiary);
-  /* Slightly darker/different than normal received */
-  border-color: var(--color-primary);
-  border-width: 2px;
+.message-highlight .message-content * {
+  color: #000 !important;
 }
 
-.message-sent.message-highlight .message-content {
-  filter: brightness(1.1);
-  box-shadow: 0 0 15px rgba(var(--color-primary-rgb), 0.5);
+/* Fix menu position for received messages */
+.message-received .message-dropdown-menu {
+  right: auto;
+  left: 0;
 }

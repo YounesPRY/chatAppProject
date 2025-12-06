@@ -89,6 +89,15 @@ function MessageList({ messages = [], searchTerm = "", userStatus, messagesEndRe
     setShowScrollButton(false);
   };
 
+  const handleScrollToMessage = (messageId) => {
+    const element = document.getElementById(`msg-${messageId}`);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      element.classList.add('message-highlight');
+      setTimeout(() => element.classList.remove('message-highlight'), 2000);
+    }
+  };
+
   return (
     <div className="message-list" ref={listRef} onScroll={handleScrollPosition}>
       {messageGroups.map((group) => (
@@ -110,6 +119,7 @@ function MessageList({ messages = [], searchTerm = "", userStatus, messagesEndRe
                   onCopy={(msg) => onMessageCopy && onMessageCopy(msg)}
                   onReply={(msg) => onMessageReply && onMessageReply(msg)}
                   onForward={(msg) => onMessageForward && onMessageForward(msg)}
+                  onReplyClick={handleScrollToMessage}
                 />
               );
             })}

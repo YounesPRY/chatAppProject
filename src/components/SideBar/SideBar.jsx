@@ -98,13 +98,18 @@ export default function Sidebar({ onSelectedChatChange, onMessageSentHandler, on
   // Handle new message sent - update chats state
   const handleMessageSent = useCallback((chatId, newMessage) => {
     isMessageUpdateRef.current = true;
-    setChats(prevChats =>
-      prevChats.map(chat =>
-        chat._id === chatId
-          ? { ...chat, messages: [...chat.messages, newMessage] }
-          : chat
-      )
-    );
+    setChats(prevChats => {
+      const chatIndex = prevChats.findIndex(c => c._id === chatId);
+      if (chatIndex === -1) return prevChats;
+
+      const updatedChat = {
+        ...prevChats[chatIndex],
+        messages: [...prevChats[chatIndex].messages, newMessage]
+      };
+
+      const otherChats = prevChats.filter(c => c._id !== chatId);
+      return [updatedChat, ...otherChats];
+    });
   }, []);
 
   // Handle message edit - update chats state
